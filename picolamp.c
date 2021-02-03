@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Liam Fraser.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "pico/stdlib.h"
@@ -84,18 +90,25 @@ int main() {
     while (true) {
         unsigned i = 0;
         char c = 0;
-        // Keep adding chars to linebuf until we see a newline
+        // Keep adding chars to linebuf until we see a newline or the buffer gets full
         do {
             // Get char from terminal
             c = getchar();
             // Put the char on the screen for the user
             putchar(c);
-            // Store the char in the line buffer
+            // Store the char in the line buffer. If we have just filled
+            // the last slow i == sizeof(linebuf) and will break the loop
             linebuf[i++] = c;
-        } while (c != '\n' && c != '\r');
+        } while ((c != '\n') && (c != '\r') && (i < sizeof(linebuf)));
 
-        // Handle the line
-        handle_line(i);
+        if (i == sizeof(linebuf)) {
+            // If we managed to fill the buffer then just ignore it
+            // i will get reset back to 0 on next loop
+            ;
+        } else {
+            // Otherwise handle the line
+            handle_line(i);
+        }
     }
 
     return 0;
